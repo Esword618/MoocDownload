@@ -115,8 +115,8 @@ func VipGetTsKey(encryptStr string, videoId int, contentType string) ([]string, 
 		// 获取key
 		keyCmp := regexp.MustCompile(`URI="(.*?)"`)
 		keyUrl := keyCmp.FindStringSubmatch(m3u8)[1]
-		fmt.Println(keyUrl)
-		color.Red.Printf("===================")
+		// fmt.Println(keyUrl)
+		// color.Red.Printf("===================")
 		headers := url.NewHeaders()
 		headers.Set("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36")
 		headers.Set("origin", "https://www.icourse163.org")

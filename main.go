@@ -42,7 +42,7 @@ func Config() {
 		NameSection, _ := DefaultSection.NewKey("Name", "慕课下载器")
 		NameSection.Comment = "# 名字"
 
-		VersionSection, _ := DefaultSection.NewKey("Version", "3.0.3")
+		VersionSection, _ := DefaultSection.NewKey("Version", "3.0.3.1")
 		VersionSection.Comment = "# 版本号"
 
 		PathSection := cfg.Section("Path")
@@ -63,6 +63,7 @@ func Config() {
 		paperSection.Comment = "# 是否下载试卷(暂时不支持)"
 
 		concurrencyN := runtime.NumCPU()
+		concurrencyN = concurrencyN * 3 / 4
 		concurrentSection, _ := judgeSection.NewKey("ConcurrentN", strconv.Itoa(concurrencyN))
 		concurrentSection.Comment = "# 并发下载数(默认为电脑的cpu数量)"
 

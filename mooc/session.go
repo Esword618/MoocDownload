@@ -119,7 +119,7 @@ func (This *MoocSession) Video(UnitId int, unitName, chapterNamePath, contentTyp
 		res1, _ := This.Session.R().SetQueryParams(map[string]string{
 			"token": videoToken,
 			"t":     strconv.FormatInt(time.Now().UnixMilli(), 10),
-		}).Get("")
+		}).Get(videoUrl)
 		tsList, KeyByte, _ := download.VipGetTsKey(res1.String(), videoId, contentType)
 		// secondaryEncrypt 为 true 代表 key也进行了加密
 		download.VipVideo1(tsList, KeyByte, unitName, chapterNamePath)

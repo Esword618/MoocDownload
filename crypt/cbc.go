@@ -41,6 +41,8 @@ func CBCDecrypter(encrypter []byte, key []byte, iv []byte) []byte {
 	}
 	blockMode := cipher.NewCBCDecrypter(block, iv)
 	result := make([]byte, len(encrypter))
+	// 填充数据
+	// encrypter = PKCS7Padding(encrypter, block.BlockSize())
 	blockMode.CryptBlocks(result, encrypter)
 	// 去除填充
 	// result = UnPKCS7Padding(result)
@@ -64,6 +66,11 @@ func PKCS7Padding(text []byte, blockSize int) []byte {
 		paddingText = bytes.Repeat([]byte{byte(padding)}, padding)
 	}
 	return append(text, paddingText...)
+}
+func PKCS5Padding(ciphertext []byte, blockSize int) []byte {
+	padding := blockSize - len(ciphertext)%blockSize
+	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
+	return append(ciphertext, padtext...)
 }
 
 /*
