@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/wangluozhe/requests"
 
-	"MoocDownload/model"
+	"MoocDownload/internal/model"
 )
 
 func CheckVersion() {

@@ -14,12 +14,11 @@ import (
 	"github.com/spf13/viper"
 	"gopkg.in/ini.v1"
 
-	"MoocDownload/mooc"
+	"MoocDownload/internal/app/mooc"
 )
 
 func main() {
-	Init()
-	util.CheckVersion()
+	// util.CheckVersion()
 	ffmpegB := util.CheckFfmpeg()
 	if !ffmpegB {
 		color.Red.Println("\n检查到您还没安装ffmpeg,如果你要下载视频，可能无法下载，建议您安装后下载!如果仅仅是下载文本资料将不受影响！\n")
@@ -29,7 +28,7 @@ func main() {
 	mooc.MoocMain()
 }
 
-func Init() {
+func init() {
 	Config()
 	Table()
 }
@@ -42,7 +41,7 @@ func Config() {
 		NameSection, _ := DefaultSection.NewKey("Name", "慕课下载器")
 		NameSection.Comment = "# 名字"
 
-		VersionSection, _ := DefaultSection.NewKey("Version", "3.0.3.1")
+		VersionSection, _ := DefaultSection.NewKey("Version", "3.0.4")
 		VersionSection.Comment = "# 版本号"
 
 		PathSection := cfg.Section("Path")

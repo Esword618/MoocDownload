@@ -3,7 +3,7 @@ package utils
 import (
 	"encoding/json"
 
-	"MoocDownload/mooc/model"
+	"MoocDownload/internal/app/mooc/model"
 )
 
 func HandleJsonStr(jsonStr string) model.MyMocTermDto {

@@ -10,8 +10,8 @@ import (
 	"github.com/gookit/color"
 	"github.com/spf13/viper"
 
-	"MoocDownload/mooc/model"
-	"MoocDownload/mooc/utils"
+	"MoocDownload/internal/app/mooc/model"
+	"MoocDownload/internal/app/mooc/utils"
 )
 
 var moocSession *MoocSession

@@ -11,9 +11,9 @@ import (
 	"github.com/go-resty/resty/v2"
 	"github.com/gookit/color"
 
-	"MoocDownload/mooc/download"
-	"MoocDownload/mooc/js"
-	"MoocDownload/mooc/model"
+	"MoocDownload/internal/app/mooc/download"
+	"MoocDownload/internal/app/mooc/js"
+	"MoocDownload/internal/app/mooc/model"
 )
 
 type MoocSession struct {
@@ -115,7 +115,7 @@ func (This *MoocSession) Video(UnitId int, unitName, chapterNamePath, contentTyp
 		secondaryEncrypt = video.SecondaryEncrypt
 	}
 	if secondaryEncrypt && contentType == "1" {
-		videoToken := js.Token(k)
+		videoToken := js.TokenCrypt(k)
 		res1, _ := This.Session.R().SetQueryParams(map[string]string{
 			"token": videoToken,
 			"t":     strconv.FormatInt(time.Now().UnixMilli(), 10),
@@ -124,7 +124,7 @@ func (This *MoocSession) Video(UnitId int, unitName, chapterNamePath, contentTyp
 		// secondaryEncrypt 为 true 代表 key也进行了加密
 		download.VipVideo1(tsList, KeyByte, unitName, chapterNamePath)
 	} else if contentType == "7" {
-		videoToken := js.Token(k)
+		videoToken := js.TokenCrypt(k)
 		res1, _ := This.Session.R().SetQueryParams(map[string]string{
 			"token": videoToken,
 			"t":     strconv.FormatInt(time.Now().UnixMilli(), 10),

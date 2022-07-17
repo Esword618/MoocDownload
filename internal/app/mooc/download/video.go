@@ -1,11 +1,14 @@
 package download
 
 import (
+	"bytes"
 	"encoding/hex"
 	"fmt"
+	"io/ioutil"
 	"math"
 	"os"
 	"os/exec"
+	"path"
 	"regexp"
 	"strconv"
 	"strings"
@@ -20,10 +23,12 @@ import (
 	"github.com/vbauerster/mpb/v7/decor"
 	"github.com/wangluozhe/requests"
 	"github.com/wangluozhe/requests/url"
+	"golang.org/x/text/encoding/simplifiedchinese"
+	"golang.org/x/text/transform"
 
 	"MoocDownload/crypt"
-	"MoocDownload/mooc/js"
-	"MoocDownload/mooc/utils"
+	"MoocDownload/internal/app/mooc/js"
+	"MoocDownload/internal/app/mooc/utils"
 )
 
 func VipDecryptTs1(KeyByte []byte, index int, chapterNamePath string, TsUrl string, wg *sync.WaitGroup) func() {
@@ -105,26 +110,38 @@ func FreeTs(chapterNamePath string, TsUrl string, index int, wg *sync.WaitGroup)
 	}
 }
 
+// UTF-8 转 GBK
+func Utf8ToGbk(s []byte) ([]byte, error) {
+	reader := transform.NewReader(bytes.NewReader(s), simplifiedchinese.GBK.NewEncoder())
+	d, e := ioutil.ReadAll(reader)
+	if e != nil {
+		return nil, e
+	}
+	return d, nil
+}
+
 func VipGetTsKey(encryptStr string, videoId int, contentType string) ([]string, []byte, int) {
 	if contentType == "1" {
 		videoId_ := strconv.Itoa(videoId)
-		m3u8 := js.M3u8(encryptStr, videoId_)
-		tsCmp := regexp.MustCompile("http.*?ts")
+		// m3u8 := js.M3u8(encryptStr, videoId_)
+		m3u8 := js.SecondaryDecrypt(encryptStr, videoId_, false)
+		// m3u8 = string(bytes.Replace([]byte(m3u8), []byte{0, 0, 0}, []byte{}, -1))
+		tsCmp := regexp.MustCompile("http.*ts")
 		// 获取ts列表
 		tsList := tsCmp.FindAllString(m3u8, -1)
 		// 获取key
 		keyCmp := regexp.MustCompile(`URI="(.*?)"`)
 		keyUrl := keyCmp.FindStringSubmatch(m3u8)[1]
-		// fmt.Println(keyUrl)
-		// color.Red.Printf("===================")
 		headers := url.NewHeaders()
 		headers.Set("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36")
 		headers.Set("origin", "https://www.icourse163.org")
 		headers.Set("referer", "https://www.icourse163.org/")
 		headers.Set("authority", "mooc2vod.stu.126.net")
 		res, _ := requests.Get(keyUrl, &url.Request{Headers: headers})
-		text := res.Text
-		key := js.Key(text, videoId_)
+		// text := res.Text
+		// key := js.Key(text, videoId_)
+		key := js.SecondaryDecrypt(res.Text, videoId_, true)
+		// key = string(bytes.Replace([]byte(key), []byte{0, 0, 0}, []byte{}, -1))
 		KeyByte, _ := hex.DecodeString(key)
 		return tsList, KeyByte, 0
 	} else {
@@ -165,11 +182,12 @@ func FreeGetTs(M3u8Str string) []string {
 func VipVideo1(TsList []string, KeyByte []byte, unitName string, chapterNamePath string) {
 	temPath := fmt.Sprintf("%s\\tem", chapterNamePath)
 	utils.PathExists(temPath)
-	var wg sync.WaitGroup
+	var wg *sync.WaitGroup
+	wg = new(sync.WaitGroup)
 	pool, _ := ants.NewPool(15)
 	defer pool.Release()
 
-	barP := mpb.New(mpb.WithWidth(60), mpb.WithWaitGroup(&wg))
+	barP := mpb.New(mpb.WithWidth(60), mpb.WithWaitGroup(wg))
 
 	total := len(TsList)
 	name := fmt.Sprintf("%s.mp4 :", unitName)
@@ -190,7 +208,7 @@ func VipVideo1(TsList []string, KeyByte []byte, unitName string, chapterNamePath
 	)
 	wg.Add(total)
 	for index, TsUrl := range TsList {
-		_ = pool.Submit(VipDecryptTs1(KeyByte, index, chapterNamePath, TsUrl, &wg))
+		_ = pool.Submit(VipDecryptTs1(KeyByte, index, chapterNamePath, TsUrl, wg))
 		bar.Increment()
 	}
 
@@ -208,12 +226,13 @@ func VipVideo1(TsList []string, KeyByte []byte, unitName string, chapterNamePath
 func VipVideo7(TsList []string, key []byte, IV int, contentType, unitName string, chapterNamePath string) {
 	temPath := fmt.Sprintf("%s\\tem", chapterNamePath)
 	utils.PathExists(temPath)
-	var wg sync.WaitGroup
+	var wg *sync.WaitGroup
+	wg = new(sync.WaitGroup)
 	concurrencyN := viper.GetInt("download.concurrencyn")
 	pool, _ := ants.NewPool(concurrencyN)
 	defer pool.Release()
 
-	barP := mpb.New(mpb.WithWaitGroup(&wg))
+	barP := mpb.New(mpb.WithWaitGroup(wg))
 
 	total := len(TsList)
 	name := fmt.Sprintf("%s.mp4 :", unitName)
@@ -234,7 +253,7 @@ func VipVideo7(TsList []string, key []byte, IV int, contentType, unitName string
 	)
 	wg.Add(total)
 	for index, TsUrl := range TsList {
-		_ = pool.Submit(VipDecryptTs7(chapterNamePath, TsUrl, key, index, IV, &wg))
+		_ = pool.Submit(VipDecryptTs7(chapterNamePath, TsUrl, key, index, IV, wg))
 		bar.Increment()
 	}
 	barP.Wait()
@@ -252,11 +271,12 @@ func FreeVideo(TsList []string, unitName string, chapterNamePath string) {
 	// temPath := fmt.Sprintf("%s\\tem", chapterNamePath)
 	// utils.PathExists(temPath)
 
-	var wg sync.WaitGroup
+	var wg *sync.WaitGroup
+	wg = new(sync.WaitGroup)
 	pool, _ := ants.NewPool(15)
 	defer pool.Release()
 
-	barP := mpb.New(mpb.WithWidth(60), mpb.WithWaitGroup(&wg))
+	barP := mpb.New(mpb.WithWidth(60), mpb.WithWaitGroup(wg))
 
 	total := len(TsList)
 	name := fmt.Sprintf("%s.mp4 :", unitName)
@@ -277,7 +297,7 @@ func FreeVideo(TsList []string, unitName string, chapterNamePath string) {
 	wg.Add(total)
 	for index, TsUrl := range TsList {
 		// wg.Add(1)
-		_ = pool.Submit(FreeTs(chapterNamePath, TsUrl, index, &wg))
+		_ = pool.Submit(FreeTs(chapterNamePath, TsUrl, index, wg))
 		bar.Increment()
 	}
 	barP.Wait()
@@ -395,6 +415,11 @@ func MergeTs(count int, name string, chapterNamePath string) {
 			fmt.Println(err)
 		}
 		color.Blue.Println("视频处理完成")
+	}
+	// 清空临时文件夹里面的文件
+	dir, _ := ioutil.ReadDir(chapterNamePath + "\\tmp")
+	for _, d := range dir {
+		os.RemoveAll(path.Join([]string{"tmp", d.Name()}...))
 	}
 }
 

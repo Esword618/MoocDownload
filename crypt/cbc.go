@@ -43,6 +43,7 @@ func CBCDecrypter(encrypter []byte, key []byte, iv []byte) []byte {
 	result := make([]byte, len(encrypter))
 	// 填充数据
 	// encrypter = PKCS7Padding(encrypter, block.BlockSize())
+
 	blockMode.CryptBlocks(result, encrypter)
 	// 去除填充
 	// result = UnPKCS7Padding(result)
