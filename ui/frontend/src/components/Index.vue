@@ -51,7 +51,7 @@
         <el-drawer
           v-model="settingDrawerVisible"
           title="设置"
-          size="35%"
+          size="30%"
           style="height: 100vh"
         >
           <el-tabs>
@@ -93,7 +93,7 @@
               <el-dialog
                 v-model="settingMoocDialogVisible"
                 title="扫码登录"
-                width="25%"
+                width="30%"
                 center
               >
                 <div style="text-align: center">
@@ -144,7 +144,9 @@
       </div>
     </el-col>
     <el-col :span="21" class="main-box">
+      <!-- <keep-alive include="Download"> -->
       <router-view></router-view>
+      <!-- </keep-alive> -->
     </el-col>
   </el-row>
 </template>

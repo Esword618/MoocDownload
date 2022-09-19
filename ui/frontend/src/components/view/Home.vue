@@ -58,29 +58,18 @@
 <script lang="ts" setup>
 import { Search } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, reactive } from "vue";
 const inputUrl = ref("");
 const selectPlatform = ref("");
+let databool = ref(false);
+const data = reactive([{}]);
 const defaultProps = {
   children: "children",
   label: "label",
 };
 let treeHeight = 600;
 let treeHeightStr = "600px";
-const searchFunc = () => {
-  if (inputUrl.value == "") {
-    ElMessage({
-      message: "链接不能为空!",
-      type: "warning",
-    });
-  } else {
-    ElMessage({
-      message: "查询成功",
-      type: "success",
-    });
-  }
-};
-const data = [
+const data1 = [
   {
     id: 1,
     label: "第一章",
@@ -144,14 +133,37 @@ const data = [
     ],
   },
 ];
+
+const searchFunc = () => {
+  if (inputUrl.value == "") {
+    ElMessage({
+      message: "链接不能为空!",
+      type: "warning",
+    });
+    return;
+  }
+  if (selectPlatform.value == "") {
+    ElMessage({
+      message: "平台不能为空!",
+      type: "warning",
+    });
+    return;
+  }
+  ElMessage({
+    message: "查询成功",
+    type: "success",
+  });
+
+  Object.assign(data, data1);
+
+  console.log(data);
+};
+
 onMounted(() => {
-  // treeHeight = (document.documentElement.clientHeight * 600) / 768;
-  console.log(treeHeight);
   window.addEventListener("resize", () => {
     // 监听页面尺寸变化
     treeHeight = (document.documentElement.clientHeight * 600) / 768;
     treeHeightStr = treeHeight.toString() + "px";
-    console.log(treeHeightStr);
   });
 });
 </script>

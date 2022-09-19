@@ -29,7 +29,7 @@
           <el-avatar
             style="text-align: center"
             :size="60"
-            src="https://avatars.githubusercontent.com/u/73058062?s=400&u=3d0ebb991f334efe4c53cc2128a78d720b4a867c&v=4"
+            :src="avatar"
           ></el-avatar>
         </div>
         <!-- 作者 -->
@@ -88,14 +88,12 @@
 </template>
 
 <script lang="ts" setup>
-// <el-icon><Check /></el-icon>
-// <el-icon><CircleClose /></el-icon>
-// <el-icon><Close /></el-icon>
 import { ref } from "vue";
 import { Check, CircleClose, Close } from "@element-plus/icons-vue";
 import color from "element-plus/es/components/color-picker/src/color";
 import { ElMessage } from "element-plus";
 import gzh from "../../assets/images/gzh.png";
+import avatar from "../../assets/images/logo.png";
 import { BrowserOpenURL } from "../../../wailsjs/runtime/runtime.js";
 // 公众号二维码
 const gzhImgVisible = ref(false);

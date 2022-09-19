@@ -20,14 +20,11 @@ func main() {
 	// Create an instance of the app structure
 	app := NewApp()
 	// 使用选项创建应用
+	TesTChan <- "hello world"
 	err := wails.Run(&options.App{
-		Title:  "MoocDownload",
-		Width:  1300,
-		Height: 768,
-		// MinWidth:          900,
-		// MinHeight:         600,
-		// MaxWidth:          1200,
-		// MaxHeight:         800,
+		Title:             "MoocDownload",
+		Width:             1200,
+		Height:            768,
 		DisableResize:     false, // 不可调节窗口大小
 		Fullscreen:        false, // 是否全屏
 		Frameless:         false, // 无边框

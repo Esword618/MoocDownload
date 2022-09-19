@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App struct
@@ -23,9 +25,18 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
+var TesTChan chan interface{} = make(chan interface{}, 1)
+
+func (a *App) Test() {
+	for {
+		runtime.EventsEmit(a.ctx, "test", <-TesTChan)
+	}
+}
+
 // domReady is called after the front-end dom has been loaded
 // domReady 在前端Dom加载完毕后调用
 func (a *App) domReady(ctx context.Context) {
+	go a.Test()
 	// Add your action here
 	// 在这里添加你的操作
 }
@@ -51,30 +62,10 @@ func (a *App) shutdown(ctx context.Context) {
 func (a *App) Greet(name string) string {
 	return fmt.Sprintf("Hello %s, It's show time!", name)
 }
+
 // // RespDate 数据响应结构体
 // type RespDate struct {
 // 	Code int         `json:"code"` // 响应码
 // 	Data interface{} `json:"data"` // 响应数据
 // 	Msg  string      `json:"msg"`  // 响应消息
-// }
-// func (a *App) OpenLink(url string) RespDate {
-// 	var cmd string
-// 	var args []string
-
-// 	switch runtime.GOOS {
-// 	case "windows":
-// 		cmd = "cmd"
-// 		args = []string{"/c", "start"}
-// 	case "darwin":
-// 		cmd = "open"
-// 	default: // "linux", "freebsd", "openbsd", "netbsd"
-// 		cmd = "xdg-open"
-// 	}
-// 	args = append(args, url)
-// 	exec.Command(cmd, args...).Start()
-// 	return RespDate{
-// 		Code: 1,
-// 		Data: "ok",
-// 		Msg:  "",
-// 	}
 // }
