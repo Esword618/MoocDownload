@@ -1,0 +1,1 @@
+import{_ as e,a as c,c as o}from"./index.e9c02e9c.js";const t={},s={cless:"title",style:{color:"black"}};function n(r,a){return c(),o("h1",s,"\u8FD9\u662F\u4E0B\u8F7D")}const l=e(t,[["render",n]]);export{l as default};
