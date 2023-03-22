@@ -10,11 +10,11 @@
 
 欢迎大家关注公众号，有什么问题可以直接跟我反馈，我会更新。记得点一个小星星。
 
-<img src="./img/qqGroup.png" style="zoom: 80%;" />
+<img src="https://cdn.jsdelivr.net/gh/Esword56/blogImg@main/vx/902a72e0543e80d43177a2b7ddc3806.7absp7tl8d00.png" alt="902a72e0543e80d43177a2b7ddc3806" style="zoom: 80%;" />
 
 交流群
 
-<img src="https://cdn.jsdelivr.net/gh/Esword56/blogImg@main/vx/微信图片_20220404193340.7jarc0vlns40.jpg" alt="微信图片_20220404193340" style="zoom: 50%;" width="100px" />
+<img src="./img/qqGroup.png" style="zoom: 80%;" />
 
 ## 教程
 
