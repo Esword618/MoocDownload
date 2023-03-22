@@ -14,7 +14,7 @@
 
 交流群
 
-<img src="./img/qqGroup.png" style="zoom: 80%;" />
+<img src="./img/qqGroup.png" style="zoom: 80%;" width="500px"/>
 
 ## 教程
 
