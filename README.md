@@ -37,23 +37,19 @@
 ## ToDo
 
 | 1     | ~~mp4 or flv 文件的分段协程下载~~ |
-| ----- | ------------------------ |
-| **2** | **可选择性下载文件**             |
+| ----- |--------------------------|
+| **2** | **~~可选择性下载文件~~**         |
 | **3** | **其它平台的也可以下载 如imooc等平台** |
 | **4** | **~~解密文件本地运行~~**         |
 | **5** | **.....还不知道....**        |
-
-## 依赖项目
-
-下一步一类项目(做可选择性下载)
-https://github.com/rivo/tview
 
 ## 参考文章
 
 [mp4/flv文件分片下载](https://polarisxu.studygolang.com/posts/go/action/build-a-concurrent-file-downloader/)
 
-./download/课程名/单元名/data.pdf或视频.mp4
 
 ## 感谢
 
-[goja](https://github.com/dop251/goja)
+[wails:gui开发](https://github.com/wailsapp/wails)
+
+[gomedia:用于视频合成](https://github.com/yapingcat/gomedia)

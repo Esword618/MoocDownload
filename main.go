@@ -1,121 +1,117 @@
 package main
 
 import (
-	"os"
-	"runtime"
-	"strconv"
-	"time"
-
-	"github.com/gookit/color"
-
-	"MoocDownload/util"
-
-	"github.com/olekukonko/tablewriter"
+	"bytes"
+	"embed"
+	"github.com/Esword618/MoocDownload/app"
+	"github.com/Esword618/MoocDownload/app/utils"
+	"github.com/Esword618/MoocDownload/config"
 	"github.com/spf13/viper"
-	"gopkg.in/ini.v1"
+	"log"
 
-	"MoocDownload/internal/app/mooc"
+	"github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2/pkg/logger"
+	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/options/linux"
+	"github.com/wailsapp/wails/v2/pkg/options/mac"
+	"github.com/wailsapp/wails/v2/pkg/options/windows"
 )
 
+//go:embed frontend/dist
+var assets embed.FS
+
+//go:embed build/appicon.png
+var icon []byte
+
 func main() {
-	// util.CheckVersion()
-	ffmpegB := util.CheckFfmpeg()
-	if !ffmpegB {
-		color.Red.Println("\n检查到您还没安装ffmpeg,如果你要下载视频，可能无法下载，建议您安装后下载!如果仅仅是下载文本资料将不受影响！\n")
-		color.Blue.Println("ffmpeg配置教程:" + "https://blog.csdn.net/weixin_42132415/article/details/118294517")
-		time.Sleep(3 * time.Second)
+	// Create an instance of the app structure
+	// 创建一个App结构体实例
+	application := app.NewApplication()
+	// Create application with options
+	// 使用选项创建应用
+	err := wails.Run(&options.App{
+		Title:  "MoocDownload",
+		Width:  1000,
+		Height: 790,
+
+		//MinWidth:          1000,
+		//MinHeight:         780,
+		//MaxWidth:          1200,
+		//MaxHeight:         780,
+		DisableResize:     false,
+		Fullscreen:        false,
+		Frameless:         true,
+		StartHidden:       false,
+		HideWindowOnClose: false,
+		BackgroundColour:  &options.RGBA{R: 255, G: 255, B: 255, A: 0},
+		Menu:              nil,
+		Logger:            nil,
+		LogLevel:          logger.DEBUG,
+		OnStartup:         application.Startup,
+		OnDomReady:        application.DomReady,
+		OnBeforeClose:     application.BeforeClose,
+		OnShutdown:        application.Shutdown,
+		WindowStartState:  options.Normal,
+		AssetServer: &assetserver.Options{
+			Assets:     assets,
+			Handler:    nil,
+			Middleware: nil,
+		},
+		Bind: []interface{}{
+			application,
+		},
+		// Windows platform specific options
+		// Windows平台特定选项
+		Windows: &windows.Options{
+			WebviewIsTransparent:              true,
+			WindowIsTranslucent:               false,
+			DisableWindowIcon:                 false,
+			DisableFramelessWindowDecorations: false,
+			WebviewUserDataPath:               "",
+			WebviewBrowserPath:                "",
+			Theme:                             windows.SystemDefault,
+			WebviewGpuIsDisabled:              false,
+		},
+		// Mac platform specific options
+		// Mac平台特定选项
+		Mac: &mac.Options{
+			TitleBar: &mac.TitleBar{
+				TitlebarAppearsTransparent: true,
+				HideTitle:                  true,
+				HideTitleBar:               false,
+				FullSizeContent:            true,
+				UseToolbar:                 false,
+				HideToolbarSeparator:       false,
+			},
+			Appearance:           mac.NSAppearanceNameDarkAqua,
+			WebviewIsTransparent: true,
+			WindowIsTranslucent:  true,
+			About: &mac.AboutInfo{
+				Title:   "Wails Template Vue",
+				Message: "A Wails template based on Vue and Vue-Router",
+				Icon:    icon,
+			},
+		},
+		Linux: &linux.Options{
+			Icon: icon,
+		},
+	})
+
+	if err != nil {
+		log.Fatal(err)
 	}
-	mooc.MoocMain()
 }
 
 func init() {
-	Config()
-	Table()
-}
-
-func Config() {
-	_, err := os.Stat(".\\conf.ini")
-	if err != nil {
-		cfg := ini.Empty()
-		DefaultSection := cfg.Section("Info")
-		NameSection, _ := DefaultSection.NewKey("Name", "慕课下载器")
-		NameSection.Comment = "# 名字"
-
-		VersionSection, _ := DefaultSection.NewKey("Version", "3.0.4")
-		VersionSection.Comment = "# 版本号"
-
-		PathSection := cfg.Section("Path")
-		PathSection.Comment = "# 路径"
-
-		downloadSection, _ := PathSection.NewKey("SavePath", "download")
-		downloadSection.Comment = "# 保存路径"
-
-		judgeSection := cfg.Section("Download")
-		judgeSection.Comment = "# 下载为1，不下载为0"
-		videoSection, _ := judgeSection.NewKey("Video", "1")
-		videoSection.Comment = "# 是否下载视频"
-
-		coursewareSection, _ := judgeSection.NewKey("Courseware", "1")
-		coursewareSection.Comment = "# 是否下载资料"
-
-		paperSection, _ := judgeSection.NewKey("Paper", "1")
-		paperSection.Comment = "# 是否下载试卷(暂时不支持)"
-
-		concurrencyN := runtime.NumCPU()
-		concurrencyN = concurrencyN * 3 / 4
-		concurrentSection, _ := judgeSection.NewKey("ConcurrentN", strconv.Itoa(concurrencyN))
-		concurrentSection.Comment = "# 并发下载数(默认为电脑的cpu数量)"
-
-		resumeSection, _ := judgeSection.NewKey("Resume", "true")
-		resumeSection.Comment = "# 是否支持断点下载(默认为true,目前仅仅部分视频支出)"
-
-		cfg.SaveTo("conf.ini")
+	// 配置文件
+	viper.SetConfigFile(config.ConfigPath)
+	b, _ := utils.PathExist(config.ConfigPath)
+	if !b {
+		viper.ReadConfig(bytes.NewBuffer([]byte(config.DefaultYaml)))
+		viper.WriteConfig()
 	}
-	viper.AddConfigPath(".\\")
-	viper.SetConfigName("conf")
-	viper.SetConfigType("ini")
-	viper.WatchConfig()
 	viper.ReadInConfig()
-	// fmt.Println(viper.AllSettings())
 }
 
-func Table() {
-	data := [][]string{
-		{"慕", "", "", ""},
-		{"课", "", "", ""},
-		{"下", "Esword", "Spiders and AI", "https://github.com/Esword618/MoocDownload"},
-		{"载", "", "", ""},
-		{"器", "", "", ""},
-	}
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{viper.GetString("info.version"), "Author", "公众号", "Github", ""})
-	table.SetFooter([]string{"", "", "♥ Cmf", "Super invincible little cute", ""}) // Add Footer
-	table.SetBorder(false)                                                         // Set Border to false
-
-	table.SetHeaderColor(
-		tablewriter.Colors{tablewriter.Bold, tablewriter.BgGreenColor},
-		tablewriter.Colors{tablewriter.FgHiRedColor, tablewriter.Bold, tablewriter.BgBlackColor},
-		tablewriter.Colors{tablewriter.BgBlueColor, tablewriter.Bold, tablewriter.FgBlackColor},
-		tablewriter.Colors{tablewriter.BgCyanColor, tablewriter.Bold, tablewriter.FgBlackColor},
-		tablewriter.Colors{},
-	)
-
-	table.SetColumnColor(
-		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiYellowColor},
-		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiRedColor},
-		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiBlueColor},
-		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiCyanColor},
-		tablewriter.Colors{},
-	)
-
-	table.SetFooterColor(
-		tablewriter.Colors{},
-		tablewriter.Colors{},
-		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiRedColor},
-		tablewriter.Colors{tablewriter.FgHiYellowColor},
-		tablewriter.Colors{},
-	)
-
-	table.AppendBulk(data)
-	table.Render()
-}
+//https://www.icourse163.org/learn/kaopei-1003292002?tid=1003524008#/learn/announce
